@@ -10,7 +10,6 @@ const imageList = ref([]);
 
 onMounted(async () => {
   const imageListResponse = await getImageList();
-  imageList.value = [];
   imageList.value = imageListResponse.data.images;
 });
 </script>
