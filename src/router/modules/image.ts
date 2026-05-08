@@ -2,7 +2,8 @@ export default {
   path: "/image",
   redirect: "/image/index",
   meta: {
-    title: "镜像"
+    title: "镜像",
+    rank: 1
   },
   children: [
     {
