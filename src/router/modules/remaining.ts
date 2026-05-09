@@ -44,5 +44,13 @@ export default [
         component: () => import("@/layout/redirect.vue")
       }
     ]
+  },
+  {
+    path: "/editor",
+    name: "editor",
+    component: () => import("@/views/editor/index.vue"),
+    meta: {
+      title: "网络拓扑图编辑"
+    }
   }
 ] satisfies Array<RouteConfigsTable>;
