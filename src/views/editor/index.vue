@@ -55,6 +55,57 @@ onMounted(() => {
       strokeWidth: 1
     }
   };
+  const ports = {
+    groups: {
+      top: {
+        position: "top",
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: "#8f8f8f",
+            r: 5
+          }
+        }
+      },
+      bottom: {
+        position: "bottom",
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: "#8f8f8f",
+            r: 5
+          }
+        }
+      },
+      left: {
+        position: "left",
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: "#8f8f8f",
+            r: 5
+          }
+        }
+      },
+      right: {
+        position: "right",
+        attrs: {
+          circle: {
+            magnet: true,
+            stroke: "#8f8f8f",
+            r: 5
+          }
+        }
+      }
+    },
+    items: [
+      { id: "top-port", group: "top" },
+      { id: "right-port", group: "right" },
+      { id: "bottom-port", group: "bottom" },
+      { id: "left-port", group: "left" }
+    ]
+  };
+
   const n1 = graph.createNode({
     shape: "rect",
     x: 40,
@@ -62,7 +113,8 @@ onMounted(() => {
     width: 80,
     height: 40,
     label: "rect",
-    attrs: commonAttrs
+    attrs: commonAttrs,
+    ports: ports
   });
   const n2 = graph.createNode({
     shape: "circle",
@@ -71,7 +123,8 @@ onMounted(() => {
     width: 40,
     height: 40,
     label: "circle",
-    attrs: commonAttrs
+    attrs: commonAttrs,
+    ports: ports
   });
   const n3 = graph.createNode({
     shape: "ellipse",
@@ -80,7 +133,8 @@ onMounted(() => {
     width: 80,
     height: 40,
     label: "ellipse",
-    attrs: commonAttrs
+    attrs: commonAttrs,
+    ports: ports
   });
   const n4 = graph.createNode({
     shape: "path",
@@ -90,8 +144,9 @@ onMounted(() => {
     height: 40,
     // https://www.svgrepo.com/svg/13653/like
     path: "M24.85,10.126c2.018-4.783,6.628-8.125,11.99-8.125c7.223,0,12.425,6.179,13.079,13.543c0,0,0.353,1.828-0.424,5.119c-1.058,4.482-3.545,8.464-6.898,11.503L24.85,48L7.402,32.165c-3.353-3.038-5.84-7.021-6.898-11.503c-0.777-3.291-0.424-5.119-0.424-5.119C0.734,8.179,5.936,2,13.159,2C18.522,2,22.832,5.343,24.85,10.126z",
+    label: "path",
     attrs: commonAttrs,
-    label: "path"
+    ports: ports
   });
   stencil.load([n1, n2], "group1");
   stencil.load([n3, n4], "group2");
