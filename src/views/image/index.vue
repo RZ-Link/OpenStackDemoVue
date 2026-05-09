@@ -17,7 +17,7 @@ onMounted(async () => {
 <template>
   <div>
     <el-container>
-      <el-header>Header</el-header>
+      <el-header />
       <el-main>
         <el-table :data="imageList" style="width: 100%">
           <el-table-column prop="id" label="id" />
@@ -30,7 +30,7 @@ onMounted(async () => {
           <el-table-column prop="updatedAt" label="更新时间" />
         </el-table>
       </el-main>
-      <el-footer>Footer</el-footer>
+      <el-footer />
     </el-container>
   </div>
 </template>
