@@ -1,5 +1,5 @@
 <script setup>
-import { Graph, Stencil, Snapline } from "@antv/x6";
+import { Graph, Stencil, Snapline, Selection } from "@antv/x6";
 import { onMounted } from "vue";
 
 defineOptions({
@@ -16,11 +16,19 @@ onMounted(() => {
       color: "#F2F7FA"
     }
   });
-
+  // 启用对齐线
   graph.use(
     new Snapline({
       enabled: true,
       sharp: true
+    })
+  );
+  // 启用选择
+  graph.use(
+    new Selection({
+      enabled: true,
+      showNodeSelectionBox: true,
+      showEdgeSelectionBox: true
     })
   );
 
