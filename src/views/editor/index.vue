@@ -135,23 +135,25 @@ onMounted(() => {
     ]
   };
 
-  const n1 = graph.createNode({
-    shape: "rect",
-    x: 40,
-    y: 40,
-    width: 80,
+  const switch_ = graph.createNode({
+    shape: "image",
+    x: 290,
+    y: 150,
+    width: 60,
     height: 40,
-    label: "rect",
+    imageUrl: "/switch.svg",
+    label: "交换机",
     attrs: commonAttrs,
     ports: ports
   });
-  const n2 = graph.createNode({
-    shape: "circle",
-    x: 180,
-    y: 40,
-    width: 40,
+  const router_ = graph.createNode({
+    shape: "image",
+    x: 290,
+    y: 150,
+    width: 60,
     height: 40,
-    label: "circle",
+    imageUrl: "/router.svg",
+    label: "路由器",
     attrs: commonAttrs,
     ports: ports
   });
@@ -177,7 +179,7 @@ onMounted(() => {
     attrs: commonAttrs,
     ports: ports
   });
-  stencil.load([n1, n2], "group1");
+  stencil.load([switch_, router_], "group1");
   stencil.load([n3, n4], "group2");
 });
 </script>
