@@ -1,5 +1,5 @@
 <script setup>
-import { Graph, Stencil, Snapline, Selection } from "@antv/x6";
+import { Graph, Stencil, Snapline, Selection, Keyboard } from "@antv/x6";
 import { onMounted } from "vue";
 
 defineOptions({
@@ -39,6 +39,19 @@ onMounted(() => {
       showEdgeSelectionBox: true
     })
   );
+  // 启用快捷键
+  graph.use(
+    new Keyboard({
+      enabled: true
+    })
+  );
+  graph.bindKey("backspace", () => {
+    const cells = graph.getSelectedCells();
+    if (cells.length) {
+      graph.removeCells(cells);
+    }
+    return false;
+  });
 
   const stencil = new Stencil({
     title: "Stencil",
