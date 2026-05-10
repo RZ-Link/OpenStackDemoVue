@@ -14,6 +14,14 @@ onMounted(() => {
     container: contentDiv,
     background: {
       color: "#F2F7FA"
+    },
+    connecting: {
+      allowBlank: false,
+      allowMulti: false,
+      allowLoop: false,
+      allowNode: false,
+      allowEdge: false,
+      allowPort: true
     }
   });
   // 启用对齐线
