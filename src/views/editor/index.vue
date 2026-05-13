@@ -1,12 +1,13 @@
 <script setup>
 import { Graph, Stencil, Snapline, Selection, Keyboard } from "@antv/x6";
 import { onMounted } from "vue";
+import { getImageList } from "@/api/image";
 
 defineOptions({
   name: "editor"
 });
 
-onMounted(() => {
+onMounted(async () => {
   const stencilDiv = document.getElementById("stencilDiv");
   const contentDiv = document.getElementById("contentDiv");
 
@@ -144,7 +145,10 @@ onMounted(() => {
     imageUrl: "/switch.svg",
     label: "交换机",
     attrs: commonAttrs,
-    ports: ports
+    ports: ports,
+    data: {
+      type: 1
+    }
   });
   const router_ = graph.createNode({
     shape: "image",
@@ -155,32 +159,36 @@ onMounted(() => {
     imageUrl: "/router.svg",
     label: "路由器",
     attrs: commonAttrs,
-    ports: ports
-  });
-  const n3 = graph.createNode({
-    shape: "ellipse",
-    x: 280,
-    y: 40,
-    width: 80,
-    height: 40,
-    label: "ellipse",
-    attrs: commonAttrs,
-    ports: ports
-  });
-  const n4 = graph.createNode({
-    shape: "path",
-    x: 420,
-    y: 40,
-    width: 40,
-    height: 40,
-    // https://www.svgrepo.com/svg/13653/like
-    path: "M24.85,10.126c2.018-4.783,6.628-8.125,11.99-8.125c7.223,0,12.425,6.179,13.079,13.543c0,0,0.353,1.828-0.424,5.119c-1.058,4.482-3.545,8.464-6.898,11.503L24.85,48L7.402,32.165c-3.353-3.038-5.84-7.021-6.898-11.503c-0.777-3.291-0.424-5.119-0.424-5.119C0.734,8.179,5.936,2,13.159,2C18.522,2,22.832,5.343,24.85,10.126z",
-    label: "path",
-    attrs: commonAttrs,
-    ports: ports
+    ports: ports,
+    data: {
+      type: 2
+    }
   });
   stencil.load([switch_, router_], "group1");
-  stencil.load([n3, n4], "group2");
+
+  const imageListResponse = await getImageList();
+  const images = imageListResponse.data.images;
+  if (images && images.length) {
+    const nodes = [];
+    images.forEach(image => {
+      nodes.push({
+        shape: "image",
+        x: 290,
+        y: 150,
+        width: 60,
+        height: 40,
+        imageUrl: "/linux.svg",
+        label: image.name,
+        attrs: commonAttrs,
+        ports: ports,
+        data: {
+          type: 3,
+          image
+        }
+      });
+    });
+    stencil.load(nodes, "group2");
+  }
 });
 </script>
 
