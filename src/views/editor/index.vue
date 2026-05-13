@@ -183,7 +183,7 @@ onMounted(async () => {
         ports: ports,
         data: {
           type: 3,
-          image
+          image: image.id
         }
       });
     });
