@@ -1,7 +1,8 @@
 <script setup>
 import { Graph, Stencil, Snapline, Selection, Keyboard } from "@antv/x6";
-import { onMounted } from "vue";
+import { onMounted, ref, reactive } from "vue";
 import { getImageList } from "@/api/image";
+import { ElMessage } from "element-plus";
 
 defineOptions({
   name: "editor"
@@ -52,6 +53,16 @@ onMounted(async () => {
       graph.removeCells(cells);
     }
     return false;
+  });
+  // 监听右键鼠标事件
+  graph.on("node:contextmenu", ({ e, x, y, node, view }) => {
+    const data = node.getData();
+    if (data.type === 1) {
+      switchForm.node = node;
+      switchForm.networkAddress = data.networkAddress;
+      switchForm.gatewayIp = data.gatewayIp;
+      switchDrawer.value = true;
+    }
   });
 
   const stencil = new Stencil({
@@ -190,6 +201,23 @@ onMounted(async () => {
     stencil.load(nodes, "group2");
   }
 });
+// 编辑交换机
+const switchDrawer = ref(false);
+const switchForm = reactive({
+  node: {},
+  networkAddress: "",
+  gatewayIp: ""
+});
+const onSwitchSave = () => {
+  const data = switchForm.node.getData();
+  data.networkAddress = switchForm.networkAddress;
+  data.gatewayIp = switchForm.gatewayIp;
+  switchForm.node.setData(data);
+  ElMessage({
+    message: "保存成功",
+    type: "success"
+  });
+};
 </script>
 
 <template>
@@ -197,6 +225,30 @@ onMounted(async () => {
     <div id="stencilDiv" class="app-stencil" />
     <div id="contentDiv" class="app-content" />
   </div>
+  <el-drawer v-model="switchDrawer">
+    <template #header>
+      <h4>编辑交换机</h4>
+    </template>
+    <template #default>
+      <div>
+        <el-form
+          :model="switchForm"
+          label-width="auto"
+          style="max-width: 600px"
+        >
+          <el-form-item label="网络地址">
+            <el-input v-model="switchForm.networkAddress" />
+          </el-form-item>
+          <el-form-item label="网关ip">
+            <el-input v-model="switchForm.gatewayIp" />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onSwitchSave">保存</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <style lang="scss" scoped>
