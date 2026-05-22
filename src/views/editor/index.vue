@@ -58,15 +58,53 @@ onMounted(async () => {
   graph.on("node:click", ({ e, x, y, node, view }) => {
     const data = node.getData();
     if (data.type === 1) {
+      // 重置switchForm
+      switchForm.node = {};
+      switchForm.networkAddress = "";
+      switchForm.gatewayIp = "";
+      // 赋值switchForm
       switchForm.node = node;
       switchForm.networkAddress = data.networkAddress;
       switchForm.gatewayIp = data.gatewayIp;
+      // 显示内容
       switchEdit.value = true;
+    }
+    if (data.type === 2) {
+      // 重置routerForm
+      routerForm.node = {};
+      routerForm.connectedNodes = [];
+      routerForm.ipInfos = {}; // nodeId->ip
+      // 赋值routerForm
+      routerForm.node = node;
+      const edges = graph.getEdges();
+      for (let i = 0; i < edges.length; i++) {
+        const edge = edges[i];
+        if (node.id === edge.getSourceCellId()) {
+          routerForm.connectedNodes.push(edge.getTargetCell());
+          routerForm.ipInfos[edge.getTargetCell().id] = {};
+          routerForm.ipInfos[edge.getTargetCell().id].ip = "";
+        }
+        if (node.id === edge.getTargetCellId()) {
+          routerForm.connectedNodes.push(edge.getSourceCell());
+          routerForm.ipInfos[edge.getSourceCell().id] = {};
+          routerForm.ipInfos[edge.getSourceCell().id].ip = "";
+        }
+      }
+      if (data.ipInfos) {
+        Object.keys(data.ipInfos).forEach(key => {
+          if (routerForm.ipInfos.hasOwnProperty(key)) {
+            routerForm.ipInfos[key] = data.ipInfos[key];
+          }
+        });
+      }
+      // 显示内容
+      routerEdit.value = true;
     }
   });
   // 画布空白区域监听单击鼠标事件
   graph.on("blank:click", ({ e, x, y, node, view }) => {
     switchEdit.value = false;
+    routerEdit.value = false;
   });
   // 当节点被添加到画布时触发
   graph.on("node:added", ({ node, index, options }) => {
@@ -226,6 +264,22 @@ const onSwitchSave = () => {
     type: "success"
   });
 };
+// 编辑路由器
+const routerEdit = ref(false);
+const routerForm = reactive({
+  node: {},
+  connectedNodes: [],
+  ipInfos: {}
+});
+const onRouterSave = () => {
+  const data = routerForm.node.getData();
+  data.ipInfos = routerForm.ipInfos;
+  routerForm.node.setData(data);
+  ElMessage({
+    message: "保存成功",
+    type: "success"
+  });
+};
 </script>
 
 <template>
@@ -255,6 +309,26 @@ const onSwitchSave = () => {
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onSwitchSave">保存</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div v-if="routerEdit">
+        <el-form
+          :model="routerForm"
+          label-width="auto"
+          style="max-width: 600px"
+        >
+          <div
+            v-for="connectedNode in routerForm.connectedNodes"
+            :key="connectedNode.id"
+          >
+            <h4>{{ connectedNode.label }}</h4>
+            <el-form-item label="ip">
+              <el-input v-model="routerForm.ipInfos[connectedNode.id].ip" />
+            </el-form-item>
+          </div>
+          <el-form-item>
+            <el-button type="primary" @click="onRouterSave">保存</el-button>
           </el-form-item>
         </el-form>
       </div>
