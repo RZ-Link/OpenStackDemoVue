@@ -68,6 +68,10 @@ onMounted(async () => {
   graph.on("blank:click", ({ e, x, y, node, view }) => {
     switchEdit.value = false;
   });
+  // 当节点被添加到画布时触发
+  graph.on("node:added", ({ node, index, options }) => {
+    node.label = node.label + "-" + node.id.slice(0, 4);
+  });
 
   const stencil = new Stencil({
     title: "Stencil",
