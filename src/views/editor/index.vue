@@ -54,15 +54,19 @@ onMounted(async () => {
     }
     return false;
   });
-  // 监听右键鼠标事件
-  graph.on("node:contextmenu", ({ e, x, y, node, view }) => {
+  // 节点监听单击鼠标事件
+  graph.on("node:click", ({ e, x, y, node, view }) => {
     const data = node.getData();
     if (data.type === 1) {
       switchForm.node = node;
       switchForm.networkAddress = data.networkAddress;
       switchForm.gatewayIp = data.gatewayIp;
-      switchDrawer.value = true;
+      switchEdit.value = true;
     }
+  });
+  // 画布空白区域监听单击鼠标事件
+  graph.on("blank:click", ({ e, x, y, node, view }) => {
+    switchEdit.value = false;
   });
 
   const stencil = new Stencil({
@@ -202,7 +206,7 @@ onMounted(async () => {
   }
 });
 // 编辑交换机
-const switchDrawer = ref(false);
+const switchEdit = ref(false);
 const switchForm = reactive({
   node: {},
   networkAddress: "",
@@ -224,13 +228,11 @@ const onSwitchSave = () => {
   <div class="stencil-app">
     <div id="stencilDiv" class="app-stencil" />
     <div id="contentDiv" class="app-content" />
-  </div>
-  <el-drawer v-model="switchDrawer">
-    <template #header>
-      <h4>编辑交换机</h4>
-    </template>
-    <template #default>
+    <div id="editDiv" class="app-edit">
       <div>
+        <h1>编辑</h1>
+      </div>
+      <div v-if="switchEdit">
         <el-form
           :model="switchForm"
           label-width="auto"
@@ -247,8 +249,8 @@ const onSwitchSave = () => {
           </el-form-item>
         </el-form>
       </div>
-    </template>
-  </el-drawer>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -270,6 +272,12 @@ const onSwitchSave = () => {
     margin-right: 8px;
     margin-left: 8px;
     box-shadow: 0 0 10px 1px #e9e9e9;
+  }
+
+  .app-edit {
+    position: relative;
+    width: 300px;
+    border: 1px solid #f0f0f0;
   }
 }
 </style>
