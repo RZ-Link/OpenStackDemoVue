@@ -235,7 +235,7 @@ const onSwitchSave = () => {
     </div>
     <div id="editDiv" class="app-edit">
       <div>
-        <h1>编辑</h1>
+        <h2>编辑</h2>
       </div>
       <div v-if="switchEdit">
         <el-form
@@ -292,6 +292,7 @@ const onSwitchSave = () => {
   .app-edit {
     position: relative;
     width: 300px;
+    padding: 8px;
     border: 1px solid #f0f0f0;
   }
 }
