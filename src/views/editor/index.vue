@@ -227,7 +227,12 @@ const onSwitchSave = () => {
 <template>
   <div class="stencil-app">
     <div id="stencilDiv" class="app-stencil" />
-    <div id="contentDiv" class="app-content" />
+    <div class="app-main">
+      <div class="app-toolbar">
+        <el-button type="primary">启动</el-button>
+      </div>
+      <div id="contentDiv" class="app-content" />
+    </div>
     <div id="editDiv" class="app-edit">
       <div>
         <h1>编辑</h1>
@@ -266,12 +271,22 @@ const onSwitchSave = () => {
     border: 1px solid #f0f0f0;
   }
 
-  .app-content {
+  .app-main {
+    display: flex;
     flex: 1;
-    height: 100%;
-    margin-right: 8px;
-    margin-left: 8px;
-    box-shadow: 0 0 10px 1px #e9e9e9;
+    flex-direction: column;
+
+    .app-toolbar {
+      margin: 8px;
+    }
+
+    .app-content {
+      flex: 1;
+      height: 100%;
+      margin-right: 8px;
+      margin-left: 8px;
+      box-shadow: 0 0 10px 1px #e9e9e9;
+    }
   }
 
   .app-edit {
