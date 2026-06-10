@@ -56,6 +56,8 @@ onMounted(async () => {
   });
   // 节点监听单击鼠标事件
   graph.on("node:click", ({ e, x, y, node, view }) => {
+    switchEdit.value = false;
+    routerEdit.value = false;
     const data = node.getData();
     if (data.type === 1) {
       // 重置switchForm
@@ -74,6 +76,7 @@ onMounted(async () => {
       routerForm.node = {};
       routerForm.connectedNodes = [];
       routerForm.ipInfos = {}; // nodeId->ip
+      routerForm.staticRoutingInfo = [];
       // 赋值routerForm
       routerForm.node = node;
       const edges = graph.getEdges();
@@ -96,6 +99,9 @@ onMounted(async () => {
             routerForm.ipInfos[key] = data.ipInfos[key];
           }
         });
+      }
+      if (data.staticRoutingInfo) {
+        routerForm.staticRoutingInfo = data.staticRoutingInfo;
       }
       // 显示内容
       routerEdit.value = true;
@@ -269,11 +275,36 @@ const routerEdit = ref(false);
 const routerForm = reactive({
   node: {},
   connectedNodes: [],
-  ipInfos: {}
+  ipInfos: {},
+  staticRoutingInfo: []
 });
+
+const addStaticRoutingInfoDialogVisible = ref(false);
+const addStaticRoutingInfoForm = reactive({
+  destinationCIDR: "",
+  nextHop: ""
+});
+const onStaticRoutingInfoAdd = () => {
+  addStaticRoutingInfoForm.destinationCIDR = "";
+  addStaticRoutingInfoForm.nextHop = "";
+  addStaticRoutingInfoDialogVisible.value = true;
+};
+const onStaticRoutingInfoSave = () => {
+  if (
+    addStaticRoutingInfoForm.destinationCIDR &&
+    addStaticRoutingInfoForm.nextHop
+  ) {
+    routerForm.staticRoutingInfo.push({
+      destinationCIDR: addStaticRoutingInfoForm.destinationCIDR,
+      nextHop: addStaticRoutingInfoForm.nextHop
+    });
+  }
+  addStaticRoutingInfoDialogVisible.value = false;
+};
 const onRouterSave = () => {
   const data = routerForm.node.getData();
   data.ipInfos = routerForm.ipInfos;
+  data.staticRoutingInfo = routerForm.staticRoutingInfo;
   routerForm.node.setData(data);
   ElMessage({
     message: "保存成功",
@@ -327,13 +358,58 @@ const onRouterSave = () => {
               <el-input v-model="routerForm.ipInfos[connectedNode.id].ip" />
             </el-form-item>
           </div>
-          <el-form-item>
+
+          <div>
+            <el-button type="primary" @click="onStaticRoutingInfoAdd"
+              >添加静态路由</el-button
+            >
+            <el-table :data="routerForm.staticRoutingInfo" style="width: 100%">
+              <el-table-column
+                prop="destinationCIDR"
+                label="目的cidr"
+                width="180"
+              />
+              <el-table-column prop="nextHop" label="下一跳" width="180" />
+            </el-table>
+          </div>
+
+          <div>
             <el-button type="primary" @click="onRouterSave">保存</el-button>
-          </el-form-item>
+          </div>
         </el-form>
       </div>
     </div>
   </div>
+  <el-dialog
+    v-model="addStaticRoutingInfoDialogVisible"
+    title="添加静态路由"
+    width="500"
+  >
+    <el-form :model="addStaticRoutingInfoForm">
+      <el-form-item label="目的cidr" label-width="100px">
+        <el-input
+          v-model="addStaticRoutingInfoForm.destinationCIDR"
+          autocomplete="off"
+        />
+      </el-form-item>
+      <el-form-item label="下一跳" label-width="100px">
+        <el-input
+          v-model="addStaticRoutingInfoForm.nextHop"
+          autocomplete="off"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="addStaticRoutingInfoDialogVisible = false"
+          >Cancel</el-button
+        >
+        <el-button type="primary" @click="onStaticRoutingInfoSave">
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>
