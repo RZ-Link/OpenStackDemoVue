@@ -58,6 +58,7 @@ onMounted(async () => {
   graph.on("node:click", ({ e, x, y, node, view }) => {
     switchEdit.value = false;
     routerEdit.value = false;
+    instanceEdit.value = false;
     const data = node.getData();
     if (data.type === 1) {
       // 重置switchForm
@@ -106,11 +107,43 @@ onMounted(async () => {
       // 显示内容
       routerEdit.value = true;
     }
+    if (data.type === 3) {
+      // 重置instanceForm
+      instanceForm.node = {};
+      instanceForm.connectedNodes = [];
+      instanceForm.ipInfos = {}; // nodeId->ip
+      // 赋值instanceForm
+      instanceForm.node = node;
+      const edges = graph.getEdges();
+      for (let i = 0; i < edges.length; i++) {
+        const edge = edges[i];
+        if (node.id === edge.getSourceCellId()) {
+          instanceForm.connectedNodes.push(edge.getTargetCell());
+          instanceForm.ipInfos[edge.getTargetCell().id] = {};
+          instanceForm.ipInfos[edge.getTargetCell().id].ip = "";
+        }
+        if (node.id === edge.getTargetCellId()) {
+          instanceForm.connectedNodes.push(edge.getSourceCell());
+          instanceForm.ipInfos[edge.getSourceCell().id] = {};
+          instanceForm.ipInfos[edge.getSourceCell().id].ip = "";
+        }
+      }
+      if (data.ipInfos) {
+        Object.keys(data.ipInfos).forEach(key => {
+          if (instanceForm.ipInfos.hasOwnProperty(key)) {
+            instanceForm.ipInfos[key] = data.ipInfos[key];
+          }
+        });
+      }
+      // 显示内容
+      instanceEdit.value = true;
+    }
   });
   // 画布空白区域监听单击鼠标事件
   graph.on("blank:click", ({ e, x, y, node, view }) => {
     switchEdit.value = false;
     routerEdit.value = false;
+    instanceEdit.value = false;
   });
   // 当节点被添加到画布时触发
   graph.on("node:added", ({ node, index, options }) => {
@@ -311,6 +344,22 @@ const onRouterSave = () => {
     type: "success"
   });
 };
+// 编辑实例
+const instanceEdit = ref(false);
+const instanceForm = reactive({
+  node: {},
+  connectedNodes: [],
+  ipInfos: {}
+});
+const onInstanceSave = () => {
+  const data = instanceForm.node.getData();
+  data.ipInfos = instanceForm.ipInfos;
+  instanceForm.node.setData(data);
+  ElMessage({
+    message: "保存成功",
+    type: "success"
+  });
+};
 </script>
 
 <template>
@@ -343,6 +392,7 @@ const onRouterSave = () => {
           </el-form-item>
         </el-form>
       </div>
+
       <div v-if="routerEdit">
         <el-form
           :model="routerForm"
@@ -375,6 +425,27 @@ const onRouterSave = () => {
 
           <div>
             <el-button type="primary" @click="onRouterSave">保存</el-button>
+          </div>
+        </el-form>
+      </div>
+
+      <div v-if="instanceEdit">
+        <el-form
+          :model="instanceForm"
+          label-width="auto"
+          style="max-width: 600px"
+        >
+          <div
+            v-for="connectedNode in instanceForm.connectedNodes"
+            :key="connectedNode.id"
+          >
+            <h4>{{ connectedNode.label }}</h4>
+            <el-form-item label="ip">
+              <el-input v-model="instanceForm.ipInfos[connectedNode.id].ip" />
+            </el-form-item>
+          </div>
+          <div>
+            <el-button type="primary" @click="onInstanceSave">保存</el-button>
           </div>
         </el-form>
       </div>
