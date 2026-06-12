@@ -4,10 +4,16 @@ import { onMounted, ref, reactive } from "vue";
 import { getImageList } from "@/api/image";
 import { ElMessage } from "element-plus";
 import { getFlavorList } from "@/api/flavor";
+import { createStack, getStackDetails } from "@/api/orchestration";
 
 defineOptions({
   name: "editor"
 });
+
+let stackId = "";
+let stackName = "";
+const stackStatus = ref("");
+const nodeIdToVNCConsoleUrl = new Map();
 
 const flavorList = ref([]);
 let graph = null;
@@ -377,7 +383,12 @@ const onInstanceSave = () => {
 };
 
 // 点击启动按钮
-const onLaunch = () => {
+const onLaunch = async () => {
+  stackId = "";
+  stackName = "";
+  stackStatus.value = "";
+  nodeIdToVNCConsoleUrl.clear();
+
   const graphNodes = graph.getNodes();
 
   const nodes = [];
@@ -403,7 +414,8 @@ const onLaunch = () => {
           node.routerInfo.ipInfos.push({ nodeId: nodeId, ip: ipInfo.ip });
         }
       );
-      node.routerInfo.staticRouteInfos = graphNode.getData().staticRoutingInfo;
+      node.routerInfo.staticRoutingInfos =
+        graphNode.getData().staticRoutingInfo;
     } else if (type === 3) {
       // 实例
       node.instanceInfo = {};
@@ -418,6 +430,38 @@ const onLaunch = () => {
     }
     nodes.push(node);
   }
+
+  const createStackResponse = await createStack({ nodes });
+  stackId = createStackResponse.data.stackId;
+  stackName = createStackResponse.data.stackName;
+
+  ElMessage({
+    message: "启动成功",
+    type: "success"
+  });
+};
+
+const onGetStackDetails = async () => {
+  const getStackDetailsResponse = await getStackDetails({
+    stackId: stackId,
+    stackName: stackName
+  });
+  stackStatus.value = getStackDetailsResponse.data.status;
+  nodeIdToVNCConsoleUrl.clear();
+  Object.entries(getStackDetailsResponse.data.nodeIdToVNCConsoleUrl).forEach(
+    ([key, value]) => {
+      nodeIdToVNCConsoleUrl.set(key, value);
+    }
+  );
+  ElMessage({
+    message: "查询成功",
+    type: "success"
+  });
+};
+
+const onOpenVNCConsole = async () => {
+  const vncConsoleUrl = nodeIdToVNCConsoleUrl.get(instanceForm.node.id);
+  window.open(vncConsoleUrl, "_blank");
 };
 </script>
 
@@ -427,6 +471,10 @@ const onLaunch = () => {
     <div class="app-main">
       <div class="app-toolbar">
         <el-button type="primary" @click="onLaunch">启动</el-button>
+        <el-button type="primary" @click="onGetStackDetails"
+          >查询stack状态</el-button
+        >
+        <el-text class="mx-1" size="large">状态: {{ stackStatus }}</el-text>
       </div>
       <div id="contentDiv" class="app-content" />
     </div>
@@ -517,6 +565,12 @@ const onLaunch = () => {
           </div>
           <div>
             <el-button type="primary" @click="onInstanceSave">保存</el-button>
+            <el-button
+              v-if="stackStatus === 'CREATE_COMPLETE'"
+              type="primary"
+              @click="onOpenVNCConsole"
+              >显示控制台</el-button
+            >
           </div>
         </el-form>
       </div>
