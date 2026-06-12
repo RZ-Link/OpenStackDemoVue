@@ -3,16 +3,24 @@ import { Graph, Stencil, Snapline, Selection, Keyboard } from "@antv/x6";
 import { onMounted, ref, reactive } from "vue";
 import { getImageList } from "@/api/image";
 import { ElMessage } from "element-plus";
+import { getFlavorList } from "@/api/flavor";
 
 defineOptions({
   name: "editor"
 });
 
+const flavorList = ref([]);
+let graph = null;
+
 onMounted(async () => {
+  // 获取实例类型
+  const flavorListResponse = await getFlavorList();
+  flavorList.value = flavorListResponse.data.flavors;
+
   const stencilDiv = document.getElementById("stencilDiv");
   const contentDiv = document.getElementById("contentDiv");
 
-  const graph = new Graph({
+  graph = new Graph({
     container: contentDiv,
     background: {
       color: "#F2F7FA"
@@ -112,6 +120,7 @@ onMounted(async () => {
       instanceForm.node = {};
       instanceForm.connectedNodes = [];
       instanceForm.ipInfos = {}; // nodeId->ip
+      instanceForm.flavor = "";
       // 赋值instanceForm
       instanceForm.node = node;
       const edges = graph.getEdges();
@@ -134,6 +143,9 @@ onMounted(async () => {
             instanceForm.ipInfos[key] = data.ipInfos[key];
           }
         });
+      }
+      if (data.flavor) {
+        instanceForm.flavor = data.flavor;
       }
       // 显示内容
       instanceEdit.value = true;
@@ -286,6 +298,7 @@ onMounted(async () => {
     stencil.load(nodes, "group2");
   }
 });
+
 // 编辑交换机
 const switchEdit = ref(false);
 const switchForm = reactive({
@@ -349,16 +362,62 @@ const instanceEdit = ref(false);
 const instanceForm = reactive({
   node: {},
   connectedNodes: [],
-  ipInfos: {}
+  ipInfos: {},
+  flavor: ""
 });
 const onInstanceSave = () => {
   const data = instanceForm.node.getData();
   data.ipInfos = instanceForm.ipInfos;
+  data.flavor = instanceForm.flavor;
   instanceForm.node.setData(data);
   ElMessage({
     message: "保存成功",
     type: "success"
   });
+};
+
+// 点击启动按钮
+const onLaunch = () => {
+  const graphNodes = graph.getNodes();
+
+  const nodes = [];
+  for (let i = 0; i < graphNodes.length; i++) {
+    const graphNode = graphNodes[i];
+    const node = {
+      id: graphNode.id,
+      name: graphNode.label,
+      type: graphNode.getData().type
+    };
+    const type = graphNode.getData().type;
+    if (type === 1) {
+      // 交换机
+      node.switchInfo = {};
+      node.switchInfo.networkAddress = graphNode.getData().networkAddress;
+      node.switchInfo.gatewayIp = graphNode.getData().gatewayIp;
+    } else if (type === 2) {
+      // 路由器
+      node.routerInfo = {};
+      node.routerInfo.ipInfos = [];
+      Object.entries(graphNode.getData().ipInfos).forEach(
+        ([nodeId, ipInfo]) => {
+          node.routerInfo.ipInfos.push({ nodeId: nodeId, ip: ipInfo.ip });
+        }
+      );
+      node.routerInfo.staticRouteInfos = graphNode.getData().staticRoutingInfo;
+    } else if (type === 3) {
+      // 实例
+      node.instanceInfo = {};
+      node.instanceInfo.ipInfos = [];
+      Object.entries(graphNode.getData().ipInfos).forEach(
+        ([nodeId, ipInfo]) => {
+          node.instanceInfo.ipInfos.push({ nodeId: nodeId, ip: ipInfo.ip });
+        }
+      );
+      node.instanceInfo.image = graphNode.getData().image;
+      node.instanceInfo.flavor = graphNode.getData().flavor;
+    }
+    nodes.push(node);
+  }
 };
 </script>
 
@@ -367,7 +426,7 @@ const onInstanceSave = () => {
     <div id="stencilDiv" class="app-stencil" />
     <div class="app-main">
       <div class="app-toolbar">
-        <el-button type="primary">启动</el-button>
+        <el-button type="primary" @click="onLaunch">启动</el-button>
       </div>
       <div id="contentDiv" class="app-content" />
     </div>
@@ -435,6 +494,18 @@ const onInstanceSave = () => {
           label-width="auto"
           style="max-width: 600px"
         >
+          <div>
+            <el-form-item label="实例类型">
+              <el-select v-model="instanceForm.flavor">
+                <el-option
+                  v-for="flavor in flavorList"
+                  :key="flavor.id"
+                  :label="flavor.name"
+                  :value="flavor.id"
+                />
+              </el-select>
+            </el-form-item>
+          </div>
           <div
             v-for="connectedNode in instanceForm.connectedNodes"
             :key="connectedNode.id"
