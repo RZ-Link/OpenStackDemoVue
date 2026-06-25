@@ -50,7 +50,8 @@ export default [
     name: "editor",
     component: () => import("@/views/editor/index.vue"),
     meta: {
-      title: "网络拓扑图编辑"
+      title: "网络拓扑图编辑",
+      rank: 3
     }
   }
 ] satisfies Array<RouteConfigsTable>;

@@ -111,12 +111,12 @@ onMounted(async () => {
       if (data.ipInfos) {
         Object.keys(data.ipInfos).forEach(key => {
           if (routerForm.ipInfos.hasOwnProperty(key)) {
-            routerForm.ipInfos[key] = data.ipInfos[key];
+            routerForm.ipInfos[key] = structuredClone(data.ipInfos[key]);
           }
         });
       }
       if (data.staticRoutingInfo) {
-        routerForm.staticRoutingInfo = data.staticRoutingInfo;
+        routerForm.staticRoutingInfo = structuredClone(data.staticRoutingInfo);
       }
       // 显示内容
       routerEdit.value = true;
@@ -146,12 +146,12 @@ onMounted(async () => {
       if (data.ipInfos) {
         Object.keys(data.ipInfos).forEach(key => {
           if (instanceForm.ipInfos.hasOwnProperty(key)) {
-            instanceForm.ipInfos[key] = data.ipInfos[key];
+            instanceForm.ipInfos[key] = structuredClone(data.ipInfos[key]);
           }
         });
       }
       if (data.flavor) {
-        instanceForm.flavor = data.flavor;
+        instanceForm.flavor = structuredClone(data.flavor);
       }
       // 显示内容
       instanceEdit.value = true;
@@ -181,11 +181,11 @@ onMounted(async () => {
     groups: [
       {
         name: "group1",
-        title: "Group1"
+        title: "交换机、路由器"
       },
       {
         name: "group2",
-        title: "Group2"
+        title: "实例"
       }
     ]
   });
@@ -474,7 +474,9 @@ const onOpenVNCConsole = async () => {
         <el-button type="primary" @click="onGetStackDetails"
           >查询stack状态</el-button
         >
-        <el-text class="mx-1" size="large">状态: {{ stackStatus }}</el-text>
+        <span class="ml-2">
+          <el-text size="large">状态: {{ stackStatus }}</el-text>
+        </span>
       </div>
       <div id="contentDiv" class="app-content" />
     </div>
@@ -509,6 +511,7 @@ const onOpenVNCConsole = async () => {
           <div
             v-for="connectedNode in routerForm.connectedNodes"
             :key="connectedNode.id"
+            class="mt-2.5"
           >
             <h4>{{ connectedNode.label }}</h4>
             <el-form-item label="ip">
@@ -517,20 +520,19 @@ const onOpenVNCConsole = async () => {
           </div>
 
           <div>
-            <el-button type="primary" @click="onStaticRoutingInfoAdd"
-              >添加静态路由</el-button
-            >
-            <el-table :data="routerForm.staticRoutingInfo" style="width: 100%">
-              <el-table-column
-                prop="destinationCIDR"
-                label="目的cidr"
-                width="180"
-              />
-              <el-table-column prop="nextHop" label="下一跳" width="180" />
-            </el-table>
+            <div class="mt-2.5">
+              <el-button type="primary" @click="onStaticRoutingInfoAdd"
+                >添加静态路由</el-button
+              >
+            </div>
+            <div class="mt-2.5">
+              <el-table :data="routerForm.staticRoutingInfo">
+                <el-table-column prop="destinationCIDR" label="目的cidr" />
+                <el-table-column prop="nextHop" label="下一跳" />
+              </el-table>
+            </div>
           </div>
-
-          <div>
+          <div class="mt-2.5">
             <el-button type="primary" @click="onRouterSave">保存</el-button>
           </div>
         </el-form>
@@ -640,7 +642,6 @@ const onOpenVNCConsole = async () => {
   }
 
   .app-edit {
-    position: relative;
     width: 300px;
     padding: 8px;
     border: 1px solid #f0f0f0;
