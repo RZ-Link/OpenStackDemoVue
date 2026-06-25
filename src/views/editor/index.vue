@@ -172,7 +172,7 @@ onMounted(async () => {
     title: "Stencil",
     target: graph,
     search(cell, keyword) {
-      return cell.shape.indexOf(keyword) !== -1;
+      return cell.label.indexOf(keyword) !== -1;
     },
     placeholder: "搜索",
     notFoundText: "没有找到查询结果",
