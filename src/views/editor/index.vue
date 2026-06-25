@@ -448,11 +448,13 @@ const onGetStackDetails = async () => {
   });
   stackStatus.value = getStackDetailsResponse.data.status;
   nodeIdToVNCConsoleUrl.clear();
-  Object.entries(getStackDetailsResponse.data.nodeIdToVNCConsoleUrl).forEach(
-    ([key, value]) => {
-      nodeIdToVNCConsoleUrl.set(key, value);
-    }
-  );
+  if (getStackDetailsResponse.data.nodeIdToVNCConsoleUrl) {
+    Object.entries(getStackDetailsResponse.data.nodeIdToVNCConsoleUrl).forEach(
+      ([key, value]) => {
+        nodeIdToVNCConsoleUrl.set(key, value);
+      }
+    );
+  }
   ElMessage({
     message: "查询成功",
     type: "success"
